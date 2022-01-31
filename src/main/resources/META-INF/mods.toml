@@ -1,0 +1,13 @@
+modLoader = "javafml"
+loaderVersion = "[36,)"
+issueTrackerURL = "https://github.com/MinerArcana/Transfiguration/issues"
+license="MIT"
+
+
+[[mods]]
+modId = "dimensionally_challenged"
+version = "${file.jarVersion}"
+displayName = "Dimensionally Challenged"
+authors = "SkySom, DivineAspect"
+description = '''
+        '''
