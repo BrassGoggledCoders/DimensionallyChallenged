@@ -1,10 +1,9 @@
 package xyz.brassgoggledcoders.dimensionallychallenged.setting;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import xyz.brassgoggledcoders.dimensionallychallenged.api.setting.IDimensionalSetting;
 import xyz.brassgoggledcoders.dimensionallychallenged.api.setting.LocationStatus;
 
@@ -14,26 +13,21 @@ public class DimensionalSetting implements IDimensionalSetting {
     private final LevelEdge above;
     private final LevelEdge below;
 
-    private final RegistryKey<World> aboveKey;
-    private final RegistryKey<World> belowKey;
-
     public DimensionalSetting(LevelEdge above, LevelEdge below) {
         this.above = above;
         this.below = below;
-        this.aboveKey = above != null ? RegistryKey.create(Registry.DIMENSION_REGISTRY, above.getLevelName()) : null;
-        this.belowKey = below != null ? RegistryKey.create(Registry.DIMENSION_REGISTRY, below.getLevelName()) : null;
     }
 
     @Override
     @Nullable
-    public RegistryKey<World> above() {
-        return aboveKey;
+    public ResourceKey<Level> findAbove(Entity entity) {
+        return null;
     }
 
     @Override
     @Nullable
-    public RegistryKey<World> below() {
-        return belowKey;
+    public ResourceKey<Level> findBelow(Entity entity) {
+        return null;
     }
 
     @Override

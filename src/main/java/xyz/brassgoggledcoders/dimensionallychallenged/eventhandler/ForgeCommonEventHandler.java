@@ -1,10 +1,9 @@
 package xyz.brassgoggledcoders.dimensionallychallenged.eventhandler;
 
 import com.google.common.collect.Lists;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -21,14 +20,13 @@ public class ForgeCommonEventHandler {
 
     @SubscribeEvent
     public static void worldTick(TickEvent.WorldTickEvent event) {
-        if (event.world instanceof IServerWorld) {
-            ServerWorld serverWorld = (ServerWorld) event.world;
+        if (event.world instanceof ServerLevel serverWorld) {
             IDimensionalSetting dimensionalSetting = DimensionallyChallenged.DIMENSIONAL_SETTINGS_MANAGER.get(serverWorld);
             if (dimensionalSetting != null) {
                 if (!serverWorld.players().isEmpty()) {
-                    List<ServerPlayerEntity> goingUp = Lists.newArrayList();
-                    List<ServerPlayerEntity> goingDown = Lists.newArrayList();
-                    for (ServerPlayerEntity player : serverWorld.players()) {
+                    List<ServerPlayer> goingUp = Lists.newArrayList();
+                    List<ServerPlayer> goingDown = Lists.newArrayList();
+                    for (ServerPlayer player : serverWorld.players()) {
                         LocationStatus status = dimensionalSetting.getStatus(player);
                         if (status == LocationStatus.ABOVE) {
                             goingUp.add(player);
@@ -44,15 +42,15 @@ public class ForgeCommonEventHandler {
     }
 
     private static void teleportPlayers(IDimensionalSetting dimensionalSetting, LocationStatus status,
-                                        IServerWorld serverWorld, List<ServerPlayerEntity> playerEntities) {
-        if (!playerEntities.isEmpty()) {
-            IServerWorld newWorld = status.findNewLevel(serverWorld, dimensionalSetting);
-            if (newWorld != null) {
-                double scale = DimensionType.getTeleportationScale(serverWorld.getLevel().dimensionType(), newWorld.dimensionType());
-                double y = (status == LocationStatus.ABOVE) ? 5 : newWorld.getHeight() - 5;
-                for (ServerPlayerEntity player : playerEntities) {
-                    player.teleportTo(newWorld.getLevel(), player.getX() / scale, y, player.getZ() / scale,
-                            player.yRot, player.xRot);
+                                        ServerLevel serverLevel, List<ServerPlayer> playerEntities) {
+        for (ServerPlayer serverPlayer : playerEntities) {
+            ServerLevel newLevel = status.findPlacement(serverLevel, serverPlayer, dimensionalSetting);
+            if (newLevel != null) {
+                double scale = DimensionType.getTeleportationScale(serverLevel.getLevel().dimensionType(), newLevel.dimensionType());
+                double y = (status == LocationStatus.ABOVE) ? 5 : newLevel.getHeight() - 5;
+                for (ServerPlayer player : playerEntities) {
+                    player.teleportTo(newLevel.getLevel(), player.getX() / scale, y, player.getZ() / scale,
+                            player.getYRot(), player.getXRot());
                 }
             }
         }

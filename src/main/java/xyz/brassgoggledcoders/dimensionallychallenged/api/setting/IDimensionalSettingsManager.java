@@ -1,12 +1,12 @@
 package xyz.brassgoggledcoders.dimensionallychallenged.api.setting;
 
-import net.minecraft.world.IServerWorld;
+import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 
 public interface IDimensionalSettingsManager {
-    boolean contains(IServerWorld serverWorld);
+    boolean contains(ServerLevel serverWorld);
 
     @Nullable
-    IDimensionalSetting get(IServerWorld serverWorld);
+    IDimensionalSetting get(ServerLevel serverWorld);
 }

@@ -1,18 +1,17 @@
 package xyz.brassgoggledcoders.dimensionallychallenged.api.setting;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
 public interface IDimensionalSetting {
     @Nullable
-    RegistryKey<World> above();
+    ResourceKey<Level> findAbove(Entity entity);
 
     @Nullable
-    RegistryKey<World> below();
+    ResourceKey<Level> findBelow(Entity entity);
 
     LocationStatus getStatus(Entity entity);
 }

@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[36,)"
+loaderVersion = "[40,)"
 issueTrackerURL = "https://github.com/MinerArcana/Transfiguration/issues"
 license="MIT"
 

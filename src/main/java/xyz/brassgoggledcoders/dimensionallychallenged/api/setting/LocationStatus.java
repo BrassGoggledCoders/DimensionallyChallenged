@@ -1,27 +1,27 @@
 package xyz.brassgoggledcoders.dimensionallychallenged.api.setting;
 
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public enum LocationStatus {
-    ABOVE(IDimensionalSetting::above),
-    STAY((dimensionalSetting) -> null),
-    BELOW(IDimensionalSetting::below);
+    ABOVE(IDimensionalSetting::findAbove),
+    STAY((dimensionalSetting, entity) -> null),
+    BELOW(IDimensionalSetting::findBelow);
 
-    private final Function<IDimensionalSetting, RegistryKey<World>> goTo;
+    private final BiFunction<IDimensionalSetting, Entity, ResourceKey<Level>> goTo;
 
-    LocationStatus(Function<IDimensionalSetting, RegistryKey<World>> goTo) {
+    LocationStatus(BiFunction<IDimensionalSetting, Entity, ResourceKey<Level>> goTo) {
         this.goTo = goTo;
     }
 
     @Nullable
-    public IServerWorld findNewLevel(IServerWorld serverLevel, IDimensionalSetting dimensionalSetting) {
-        RegistryKey<World> levelName = goTo.apply(dimensionalSetting);
+    public ServerLevel findPlacement(ServerLevel serverLevel, Entity entity, IDimensionalSetting dimensionalSetting) {
+        ResourceKey<Level> levelName = goTo.apply(dimensionalSetting, entity);
         if (levelName != null) {
             return serverLevel.getLevel()
                     .getServer()

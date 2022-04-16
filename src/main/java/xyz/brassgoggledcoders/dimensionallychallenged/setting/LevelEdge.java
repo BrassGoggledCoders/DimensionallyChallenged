@@ -1,7 +1,7 @@
 package xyz.brassgoggledcoders.dimensionallychallenged.setting;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 
 import java.util.function.DoublePredicate;
 

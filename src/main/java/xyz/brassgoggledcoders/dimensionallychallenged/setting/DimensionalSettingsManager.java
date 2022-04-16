@@ -5,12 +5,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.minecraft.client.resources.JsonReloadListener;
-import net.minecraft.profiler.IProfiler;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.IServerWorld;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraftforge.common.util.JsonUtils;
 import xyz.brassgoggledcoders.dimensionallychallenged.DimensionallyChallenged;
 import xyz.brassgoggledcoders.dimensionallychallenged.api.setting.IDimensionalSetting;
 import xyz.brassgoggledcoders.dimensionallychallenged.api.setting.IDimensionalSettingsManager;
@@ -20,7 +21,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class DimensionalSettingsManager extends JsonReloadListener implements IDimensionalSettingsManager {
+public class DimensionalSettingsManager extends SimpleJsonResourceReloadListener implements IDimensionalSettingsManager {
     private final Map<ResourceLocation, DimensionalSetting> dimensionalSettings = Maps.newHashMap();
 
     public DimensionalSettingsManager() {
@@ -28,8 +29,8 @@ public class DimensionalSettingsManager extends JsonReloadListener implements ID
     }
 
     @Override
-    public boolean contains(IServerWorld serverWorld) {
-        return dimensionalSettings.containsKey(serverWorld.getLevel()
+    public boolean contains(ServerLevel serverLevel) {
+        return dimensionalSettings.containsKey(serverLevel.getLevel()
                 .dimension()
                 .location()
         );
@@ -37,8 +38,8 @@ public class DimensionalSettingsManager extends JsonReloadListener implements ID
 
     @Override
     @Nullable
-    public IDimensionalSetting get(IServerWorld serverWorld) {
-        return dimensionalSettings.get(serverWorld.getLevel()
+    public IDimensionalSetting get(ServerLevel serverLevel) {
+        return dimensionalSettings.get(serverLevel.getLevel()
                 .dimension()
                 .location()
         );
@@ -46,12 +47,12 @@ public class DimensionalSettingsManager extends JsonReloadListener implements ID
 
     @Override
     @ParametersAreNonnullByDefault
-    protected void apply(Map<ResourceLocation, JsonElement> pObject, IResourceManager pResourceManager, IProfiler pProfiler) {
+    protected void apply(Map<ResourceLocation, JsonElement> pObject, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
         Map<ResourceLocation, DimensionalSetting> newDimensionalSettings = Maps.newHashMap();
         dimensionalSettings.clear();
         for (Entry<ResourceLocation, JsonElement> entry : pObject.entrySet()) {
             ResourceLocation name = entry.getKey();
-            JsonObject rootObject = JSONUtils.convertToJsonObject(entry.getValue(), "Root");
+            JsonObject rootObject = GsonHelper.convertToJsonObject(entry.getValue(), "Root");
             try {
                 LevelEdge above = parseLevelEdge(rootObject, true);
                 LevelEdge below = parseLevelEdge(rootObject, false);
@@ -76,13 +77,13 @@ public class DimensionalSettingsManager extends JsonReloadListener implements ID
     private LevelEdge parseLevelEdge(JsonObject rootObject, boolean above) {
         String memberName = above ? "above" : "below";
         if (rootObject.has(memberName)) {
-            JsonObject edgeObject = JSONUtils.getAsJsonObject(rootObject, memberName);
-            String name = JSONUtils.getAsString(edgeObject, "name");
+            JsonObject edgeObject = GsonHelper.getAsJsonObject(rootObject, memberName);
+            String name = GsonHelper.getAsString(edgeObject, "name");
             ResourceLocation levelName = ResourceLocation.tryParse(name);
             if (levelName == null) {
                 throw new JsonParseException("'name' was not a valid ResourceLocation");
             }
-            int height = JSONUtils.getAsInt(edgeObject, "height");
+            int height = GsonHelper.getAsInt(edgeObject, "height");
             return new LevelEdge(levelName, height, above);
         }
         return null;
