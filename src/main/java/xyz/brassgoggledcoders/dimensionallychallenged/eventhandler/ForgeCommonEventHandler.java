@@ -19,14 +19,14 @@ import java.util.List;
 public class ForgeCommonEventHandler {
 
     @SubscribeEvent
-    public static void worldTick(TickEvent.WorldTickEvent event) {
-        if (event.world instanceof ServerLevel serverWorld) {
-            IDimensionalSetting dimensionalSetting = DimensionallyChallenged.DIMENSIONAL_SETTINGS_MANAGER.get(serverWorld);
+    public static void levelTick(TickEvent.LevelTickEvent event) {
+        if (event.level instanceof ServerLevel serverLevel) {
+            IDimensionalSetting dimensionalSetting = DimensionallyChallenged.DIMENSIONAL_SETTINGS_MANAGER.get(serverLevel);
             if (dimensionalSetting != null) {
-                if (!serverWorld.players().isEmpty()) {
+                if (!serverLevel.players().isEmpty()) {
                     List<ServerPlayer> goingUp = Lists.newArrayList();
                     List<ServerPlayer> goingDown = Lists.newArrayList();
-                    for (ServerPlayer player : serverWorld.players()) {
+                    for (ServerPlayer player : serverLevel.players()) {
                         LocationStatus status = dimensionalSetting.getStatus(player);
                         if (status == LocationStatus.ABOVE) {
                             goingUp.add(player);
@@ -34,8 +34,8 @@ public class ForgeCommonEventHandler {
                             goingDown.add(player);
                         }
                     }
-                    teleportPlayers(dimensionalSetting, LocationStatus.ABOVE, serverWorld, goingUp);
-                    teleportPlayers(dimensionalSetting, LocationStatus.BELOW, serverWorld, goingDown);
+                    teleportPlayers(dimensionalSetting, LocationStatus.ABOVE, serverLevel, goingUp);
+                    teleportPlayers(dimensionalSetting, LocationStatus.BELOW, serverLevel, goingDown);
                 }
             }
         }
@@ -43,15 +43,13 @@ public class ForgeCommonEventHandler {
 
     private static void teleportPlayers(IDimensionalSetting dimensionalSetting, LocationStatus status,
                                         ServerLevel serverLevel, List<ServerPlayer> playerEntities) {
-        for (ServerPlayer serverPlayer : playerEntities) {
-            ServerLevel newLevel = status.findPlacement(serverLevel, serverPlayer, dimensionalSetting);
+        for (ServerPlayer player : playerEntities) {
+            ServerLevel newLevel = status.findPlacement(serverLevel, player, dimensionalSetting);
             if (newLevel != null) {
                 double scale = DimensionType.getTeleportationScale(serverLevel.getLevel().dimensionType(), newLevel.dimensionType());
                 double y = (status == LocationStatus.ABOVE) ? 5 : newLevel.getHeight() - 5;
-                for (ServerPlayer player : playerEntities) {
                     player.teleportTo(newLevel.getLevel(), player.getX() / scale, y, player.getZ() / scale,
                             player.getYRot(), player.getXRot());
-                }
             }
         }
 
