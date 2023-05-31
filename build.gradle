@@ -2,12 +2,12 @@ buildscript {
     repositories {
         maven { 
             name = "Minecraft Forge"
-            url = 'https://maven.minecraftforge.net' 
+            url("https://maven.minecraftforge.net")
         }
         mavenCentral()
         maven {
             name = "Parchment"
-            url = 'https://maven.parchmentmc.org'
+            url("https://maven.parchmentmc.org")
         }
     }
     dependencies {
@@ -26,6 +26,8 @@ group = 'xyz.brassgoggledcoders.dimensionallychallenged'
 archivesBaseName = 'dimensionallychallenged'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+jarJar.enable()
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
@@ -75,8 +77,18 @@ minecraft {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
+repositories {
+    mavenLocal()
+}
+
 dependencies {
     minecraft 'net.minecraftforge:forge:1.19.2-43.2.11'
+
+    implementation fg.deobf("xyz.brassgoggledcoders.shadyskies:Conditional:1.1.0")
+    jarJar(group: 'xyz.brassgoggledcoders.shadyskies', name: 'Conditional', version: "1.1.0") {
+        jarJar.pin(it, "1.1.0")
+        jarJar.ranged(it, "[1.1.0, 1.2.0)")
+    }
 }
 
 jar {
@@ -93,7 +105,20 @@ jar {
     }
 }
 
-jar.finalizedBy('reobfJar') 
+jar.finalizedBy('reobfJar')
+tasks.jarJar.finalizedBy('reobfJarJar')
+
+reobf {
+    jarJar { }
+}
+
+tasks.jarJar.configure {
+    classifier ''
+}
+
+tasks.jar.configure {
+    classifier 'slim'
+}
 
 publishing {
     publications {

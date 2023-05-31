@@ -5,19 +5,24 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.mojang.serialization.JsonOps;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.common.util.JsonUtils;
 import xyz.brassgoggledcoders.dimensionallychallenged.DimensionallyChallenged;
 import xyz.brassgoggledcoders.dimensionallychallenged.api.setting.IDimensionalSetting;
 import xyz.brassgoggledcoders.dimensionallychallenged.api.setting.IDimensionalSettingsManager;
+import xyz.brassgoggledcoders.shadyskies.conditional.conditional.IConditional;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -84,7 +89,18 @@ public class DimensionalSettingsManager extends SimpleJsonResourceReloadListener
                 throw new JsonParseException("'name' was not a valid ResourceLocation");
             }
             int height = GsonHelper.getAsInt(edgeObject, "height");
-            return new LevelEdge(levelName, height, above);
+            List<IConditional> conditionals;
+            if (edgeObject.has("conditionals")) {
+                conditionals = IConditional.LIST_CODEC.decode(JsonOps.INSTANCE, edgeObject.get("conditionals"))
+                        .getOrThrow(false, message -> {
+                            throw new JsonParseException("Failed to parse 'conditionals': " + message);
+                        })
+                        .getFirst();
+            } else {
+                conditionals = Collections.emptyList();
+            }
+
+            return new LevelEdge(ResourceKey.create(Registry.DIMENSION_REGISTRY, levelName), height, above, conditionals);
         }
         return null;
     }
